@@ -1,16 +1,35 @@
 import React from 'react';
 import {NavigationContainer} from '@react-navigation/native';
-import {createNativeStackNavigator} from '@react-navigation/native-stack';
+import {createBottomTabNavigator} from '@react-navigation/bottom-tabs';
 import {Home} from '../screens/Home';
+import FavoritesScreen from '../screens/Favorites/FavoritesScreen';
+import {FontAwesomeIcon} from '@fortawesome/react-native-fontawesome';
+import {faListAlt, faStar} from '@fortawesome/free-regular-svg-icons';
 
-const Stack = createNativeStackNavigator();
+const Tab = createBottomTabNavigator();
 
-export const MainNavigator = () => {
+export const MyTabs = () => {
   return (
     <NavigationContainer>
-      <Stack.Navigator initialRouteName="Home">
-        <Stack.Screen name="Home" component={Home} />
-      </Stack.Navigator>
+      <Tab.Navigator>
+        <Tab.Screen
+          name="Home"
+          component={Home}
+          options={{
+            tabBarIcon: ({color}) => (
+              <FontAwesomeIcon icon={faListAlt} color={color} size={24} />
+            ),
+          }}
+        />
+        <Tab.Screen 
+          name="Favorites"
+          component={FavoritesScreen}
+          options={{
+            tabBarIcon: ({color}) => (
+              <FontAwesomeIcon icon={faStar} color={color} size={24} />
+            ),
+          }} />
+      </Tab.Navigator>
     </NavigationContainer>
   );
 };
