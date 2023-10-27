@@ -1,4 +1,5 @@
 import React from 'react';
+import {View, Button, TouchableOpacity} from 'react-native';
 import {NavigationContainer} from '@react-navigation/native';
 import {createBottomTabNavigator} from '@react-navigation/bottom-tabs';
 import {Home} from '../screens/Home';
@@ -16,19 +17,22 @@ export const MyTabs = () => {
           name="Home"
           component={Home}
           options={{
+            headerShown: false,
             tabBarIcon: ({color}) => (
               <FontAwesomeIcon icon={faListAlt} color={color} size={24} />
             ),
           }}
         />
-        <Tab.Screen 
+        <Tab.Screen
           name="Favorites"
           component={FavoritesScreen}
           options={{
+            headerShown: false,
             tabBarIcon: ({color}) => (
               <FontAwesomeIcon icon={faStar} color={color} size={24} />
             ),
-          }} />
+          }}
+        />
       </Tab.Navigator>
     </NavigationContainer>
   );

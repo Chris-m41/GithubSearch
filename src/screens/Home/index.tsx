@@ -7,13 +7,17 @@ import {
   TouchableOpacity,
   View,
   Alert,
+  SafeAreaView,
 } from 'react-native';
 import {Octokit} from 'octokit';
 import 'react-native-url-polyfill/auto';
 import {FontAwesomeIcon} from '@fortawesome/react-native-fontawesome';
 import {faStar, faTrashCan} from '@fortawesome/free-regular-svg-icons';
+import {faFilter} from '@fortawesome/free-solid-svg-icons';
 
-const octokit = new Octokit({auth: 'api-Key'});
+const octokit = new Octokit({
+  auth: 'api_call',
+});
 
 export const searchRepos = async (searchTerm: string, setSearchData: any) => {
   try {
@@ -30,7 +34,6 @@ export const searchRepos = async (searchTerm: string, setSearchData: any) => {
       url: repo.html_url ?? 'www.github.com',
       description: repo.description ?? 'Description Missing',
     }));
-    console.log('data', data);
     setSearchData(data);
   } catch (error) {
     console.error(error);
@@ -46,21 +49,22 @@ export const Home = () => {
   }, [searchTerm]);
 
   return (
-    <View style={{flex: 1}}>
-      <View style={{flex: 1}}>
+    <SafeAreaView style={styles.homeContainer}>
+      <Header title="Home" />
+      <View style={styles.homeSearchContainer}>
         <SearchBar searchTerm={searchTerm} setSearchTerm={setSearchTerm} />
       </View>
-      <View style={{flex: 9}}>
+      <View style={styles.homeListContainer}>
         <SearchList searchData={searchData} />
       </View>
-    </View>
+    </SafeAreaView>
   );
 };
 
 export const SearchBar = props => {
   const {searchTerm, setSearchTerm} = props;
   return (
-    <View style={{marginHorizontal: 10, marginTop: 10}}>
+    <View style={styles.searchBarContainer}>
       <TextInput
         style={styles.input}
         value={searchTerm}
@@ -74,7 +78,7 @@ export const SearchBar = props => {
 export const SearchList = props => {
   const {searchData} = props;
   return (
-    <View style={{margin: 10}}>
+    <View style={styles.searchListContainer}>
       <FlatList
         data={searchData}
         keyExtractor={item => item.id}
@@ -89,14 +93,32 @@ export const SearchList = props => {
 export const RenderSearchItem = props => {
   const {data, isSearch, isDelete, deleteRepo, setRefresh} = props;
   return (
-    <View style={{flex: 1, marginBottom: 20, flexDirection: 'row'}}>
-      <View style={{flex: 8}}>
-        <Text>Name: {data.fullName}</Text>
-        {data.description && <Text>Description: {data.description}</Text>}
-        <Text>Language: {data.language}</Text>
-        <Text>Stars: {data.stargazersCount}</Text>
+    <View style={styles.renderSearchItemContainer}>
+      <View style={styles.renderSearchItemDetails}>
+        <View style={styles.renderItemContainer}>
+          <Text style={styles.renderItemTextTitle}>Name: </Text>
+          <Text style={styles.renderItemTextData}>{data.fullName}</Text>
+        </View>
+        {data.description && (
+          <View style={styles.renderItemContainer}>
+            <Text style={styles.renderItemTextTitle}>Description:</Text>
+            <Text style={styles.renderItemTextData}>
+              {data.description.length > 15
+                ? data.description.substring(0, 15) + '...'
+                : data.description}
+            </Text>
+          </View>
+        )}
+        <View style={styles.renderItemContainer}>
+          <Text style={styles.renderItemTextTitle}>Language: </Text>
+          <Text style={styles.renderItemTextData}>{data.language}</Text>
+        </View>
+        <View style={styles.renderItemContainer}>
+          <Text style={styles.renderItemTextTitle}>Stars: </Text>
+          <Text style={styles.renderItemTextData}>{data.stargazersCount}</Text>
+        </View>
       </View>
-      <View style={{flex: 2, justifyContent: 'center', alignItems: 'center'}}>
+      <View style={styles.renderSearchItemIcon}>
         {isSearch && (
           <TouchableOpacity
             onPress={async () => {
@@ -142,7 +164,6 @@ export const addRepo = async data => {
     if (jsonObject.repos.length >= 10) {
       showAlert();
     } else {
-      console.log('postData', postData);
       await fetch(url, {
         method: 'POST',
         headers: {
@@ -156,7 +177,7 @@ export const addRepo = async data => {
   }
 };
 
-const showAlert = () => {
+export const showAlert = () => {
   Alert.alert(
     'Limit Reached',
     "You've reached your limit of 10 saved repos. Please delete some repos from your favorites list to add more.",
@@ -170,11 +191,90 @@ const showAlert = () => {
   );
 };
 
+export const Header = ({
+  title,
+  showButton = false,
+  showFilterModal,
+  setShowFilterModal,
+}: {
+  title: string;
+  showButton?: boolean;
+}) => {
+  return (
+    <View style={styles.headerContainer}>
+      <Text style={styles.headerTitle}>{title}</Text>
+      {showButton && (
+        <TouchableOpacity
+          style={styles.filterButton}
+          onPress={() => setShowFilterModal(!showFilterModal)}>
+          <FontAwesomeIcon icon={faFilter} size={24} />
+        </TouchableOpacity>
+      )}
+    </View>
+  );
+};
+
 const styles = StyleSheet.create({
   input: {
     height: 40,
     marginBottom: 10,
     borderWidth: 1,
     padding: 10,
+  },
+  headerContainer: {
+    height: 50,
+    backgroundColor: '#f8f8f8',
+    flexDirection: 'row',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  filterButton: {
+    position: 'absolute',
+    right: 10,
+  },
+  headerTitle: {
+    fontSize: 20,
+    flex: 1,
+    textAlign: 'center',
+  },
+  homeContainer: {
+    flex: 1,
+  },
+  homeListContainer: {
+    flex: 9,
+  },
+  homeSearchContainer: {
+    flex: 1,
+  },
+  searchBarContainer: {
+    marginHorizontal: 10,
+    marginTop: 10,
+  },
+  searchListContainer: {
+    margin: 10,
+  },
+  renderSearchItemContainer: {
+    flex: 1,
+    paddingVertical: 10,
+    flexDirection: 'row',
+    borderBottomWidth: 1,
+  },
+  renderSearchItemDetails: {
+    flex: 8,
+  },
+  renderSearchItemIcon: {
+    flex: 2,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  renderItemContainer: {
+    flexDirection: 'row',
+  },
+  renderItemTextTitle: {
+    fontWeight: 'bold',
+    fontSize: 18,
+  },
+  renderItemTextData: {
+    fontSize: 18,
   },
 });
